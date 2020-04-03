@@ -1,60 +1,51 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+    <!-- NavBar left -->
+    <v-navigation-drawer v-model="drawer" :clipped="$vuetify.breakpoint.lgAndUp" app>
+      <v-list dense>
+        <template v-for="item in items">
+          <v-list-item :key="item.text" link>
+            <v-list-item-action>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>
+                {{ item.text }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+      </v-list>
+    </v-navigation-drawer>
+    <!-- NavBar top -->
+    <v-app-bar :clipped-left="$vuetify.breakpoint.lgAndUp" app color="blue darken-4" dark>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-toolbar-title style="width: 300px" class="ml-0 pl-1">
+        <span>Application Machine Learning</span>
+      </v-toolbar-title>
+      <v-spacer />
     </v-app-bar>
-
+    <!-- Content -->
     <v-content>
-      <HelloWorld/>
+      <router-view></router-view>
     </v-content>
+    <!-- Navbar bottom -->
+    <NavBottom v-if="true"></NavBottom>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
+import NavBottom from '@/components/NavBottom.vue'
 
 export default {
-  name: 'App',
-
   components: {
-    HelloWorld
+    NavBottom
   },
-
   data: () => ({
-    //
+    drawer: null,
+    items: [
+      { icon: 'mdi-contacts', text: 'Contacts' }
+    ]
   })
 }
 </script>
