@@ -3,7 +3,7 @@
     <v-container>
       <v-row align="center" justify="center">
         <v-col cols="12" align-self="center" v-if="file == null">
-          <div class="title mb-1">Séléctioné un vêtement</div>
+          <div class="title mb-1">Sélectionné un vêtement</div>
         </v-col>
         <v-col cols="12" align-self="center" v-else>
           <div class="title mb-1">IA Vêtement</div>
