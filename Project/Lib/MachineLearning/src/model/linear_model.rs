@@ -1,6 +1,74 @@
+extern crate ndarray;
+extern crate rand;
+use ndarray::prelude::*;
+use ndarray::Array;
+use ndarray_rand::RandomExt;
+use ndarray_rand::rand_distr::Uniform;
+use rand::Rng;
+use nalgebra::*;
+
+
+// #[no_mangle]  pour partager une fonction
+/**
+    Test
+*/
 pub fn test() {
-    
+    // Lineare Model classification
+    let array_x3: Vec<Vec<f64>> = vec![vec![1., 1.], vec![2., 3.], vec![3., 3.]];
+    let array_y3: Vec<f64> = vec![1., -1., -1.];
+    test_linear_model_classification_python(array_x3.clone(), array_y3.clone());
+
+    // Lineare Model Régression
+    let array_x2: Vec<Vec<f64>> = vec![vec![1.], vec![2.]];
+    let array_y2: Vec<f64> = vec![2., 3.];
+
+    test_linear_model_regression_python(array_x2, array_y2);
+
 }
+
+/**
+    Test lineare model regression in python
+    @param array_x: Vec<Vec<f64>> Vector 2 dimension
+    @param array_y: Vec<f64> Vector 1 dimension
+*/
+pub fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+    println!("MODELE LINEAIRE REGRESSION");
+
+    // Entrainement du model
+    let model_regression = train_regression(array_x.clone(), array_y);
+    // println!("model_regression: {:?}", model_regression.clone());
+
+    // Test du dataset
+    for i in 0..(array_x.len()) {
+        println!("{:?}", predict_linear_regression(model_regression.clone(), array_x[i].clone()));
+    }
+}
+
+/**
+    Test lineare model classification in python
+    @param array_x: Vec<Vec<f64>> Vector 2 dimension
+    @param array_y: Vec<f64> Vector 1 dimension
+*/
+pub fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+    println!("MODELE LINEAIRE CLASIFFICATION");
+
+    // Initialisation des poids du modèle
+    let mut model_classification2 = create_model(array_x.clone());
+
+    // Lancement de l'entrainement du modèle
+    train_rosenblatt_2(&mut model_classification2, array_x.clone(), array_y.clone(), 10000, 0.01);
+
+    // Transformation du tableau 2D en 1D
+    let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
+    // Transformation du tableau en matrice
+    let array_x_matrix = Array::from_shape_vec((array_x.len(), array_x.first().unwrap().len()), array_x_transform);
+
+    // Test sur le dataset
+    for i in 0..(array_x_matrix.clone().unwrap().shape()[0]) {
+        println!("{:?}", predict_linear_classification(&model_classification2, array_x_matrix.clone().unwrap().slice(s![i, ..])));
+    }
+}
+
 /**
     Prédiction linéaire pour un probleme de classification
     @param &Array1<f64> random_array Tableau 1D de random
