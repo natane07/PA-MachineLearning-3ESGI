@@ -14,6 +14,21 @@ pub fn predict_linear_classification(model: &Array1<f64>, array_x_k: ArrayView1<
     }
     return if sum >= 0. { 1. } else { -1. };
 }
+
+/**
+    Prédiction linéaire pour un probleme de régression
+    @param &Array1<f64> random_array Tableau 1D de random
+    @param ArrayView1<f64> array_x_k Tableau de visualisation 1D
+    @return f64 somme
+*/
+pub fn predict_linear_regression(model: Vec<f64>, array_x_k: Vec<f64>) -> f64 {
+    let mut sum = model[0];
+    for i in 0..(array_x_k.len()) {
+        sum += model[i] * array_x_k[i];
+    }
+    return sum;
+}
+
 /**
     Règle de Rosenblatt
     @param mutable Array1<f64> random_array Tableau 1D de random
@@ -82,4 +97,22 @@ fn double_vec_in_one_vec(double_vec: Vec<Vec<f64>>) -> Vec<f64> {
         }
     }
     return array;
+}
+
+/**
+    Entrainement modéle linéaire simple de régression
+    @param Vec<Vec<f64>> array_x
+    @param Vec<f64> array_y
+    @return Vec<f64>
+*/
+fn train_regression(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) -> Vec<f64> {
+    let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
+
+    let matrix_x = DMatrix::from_row_slice(array_x.len(), array_x.first().unwrap().len(), &array_x_transform);
+
+    let matrix_y = DMatrix::from_row_slice(array_y.len(), 1, &array_y);
+
+    let matrix_w = (((matrix_x.transpose() * matrix_x.clone()).try_inverse()).unwrap() * matrix_x.transpose()) * matrix_y.clone();
+
+    return matrix_w.data.as_vec().to_vec();
 }
