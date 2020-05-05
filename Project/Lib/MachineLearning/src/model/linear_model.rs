@@ -12,7 +12,8 @@ use nalgebra::*;
 /**
     Test
 */
-pub fn test() {
+#[no_mangle]
+pub extern fn test() {
     // Lineare Model classification
     let array_x3: Vec<Vec<f64>> = vec![vec![1., 1.], vec![2., 3.], vec![3., 3.]];
     let array_y3: Vec<f64> = vec![1., -1., -1.];
@@ -31,7 +32,8 @@ pub fn test() {
     @param array_x: Vec<Vec<f64>> Vector 2 dimension
     @param array_y: Vec<f64> Vector 1 dimension
 */
-pub fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+#[no_mangle]
+pub extern fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
     println!("MODELE LINEAIRE REGRESSION");
 
     // Entrainement du model
@@ -49,7 +51,8 @@ pub fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_y: Vec<
     @param array_x: Vec<Vec<f64>> Vector 2 dimension
     @param array_y: Vec<f64> Vector 1 dimension
 */
-pub fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+#[no_mangle]
+pub extern fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
     println!("MODELE LINEAIRE CLASIFFICATION");
 
     // Initialisation des poids du modèle
@@ -75,7 +78,8 @@ pub fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, array_y: 
     @param ArrayView1<f64> array_x_k Tableau de visualisation 1D
     @return f64 1. ou -1.
 */
-pub fn predict_linear_classification(model: &Array1<f64>, array_x_k: ArrayView1<f64>) -> f64 {
+#[no_mangle]
+pub extern fn predict_linear_classification(model: &Array1<f64>, array_x_k: ArrayView1<f64>) -> f64 {
     let mut sum = model[0];
     for i in 0..(array_x_k.shape()[0]) {
         sum += model[i + 1] * array_x_k[i];
@@ -89,7 +93,8 @@ pub fn predict_linear_classification(model: &Array1<f64>, array_x_k: ArrayView1<
     @param ArrayView1<f64> array_x_k Tableau de visualisation 1D
     @return f64 somme
 */
-pub fn predict_linear_regression(model: Vec<f64>, array_x_k: Vec<f64>) -> f64 {
+#[no_mangle]
+pub extern fn predict_linear_regression(model: Vec<f64>, array_x_k: Vec<f64>) -> f64 {
     let mut sum = model[0];
     for i in 0..(array_x_k.len()) {
         sum += model[i] * array_x_k[i];
@@ -121,7 +126,8 @@ pub fn train_rosenblatt(model: &mut Array1<f64>, array_x: &Array2<f64>, array_y:
     @param array_x: Vec<Vec<f64>> Tableau 2D des données x
     @return Array1<f64> Tableau 1D de random
 */
-fn create_model(array_x: Vec<Vec<f64>>) -> Array1<f64> {
+#[no_mangle]
+pub extern fn create_model(array_x: Vec<Vec<f64>>) -> Array1<f64> {
     let array_x_matrix = Array::from_shape_vec((array_x.len(), array_x.first().unwrap().len()), double_vec_in_one_vec(array_x.clone()));
     assert!(array_x_matrix.is_ok());
     return Array::random(array_x_matrix.unwrap().shape()[1] + 1, Uniform::new(0., 1.));
@@ -135,7 +141,8 @@ fn create_model(array_x: Vec<Vec<f64>>) -> Array1<f64> {
     @param nb_iter: i64 nombre d'itération
     @param alpha: f64 le pas
 */
-pub fn train_rosenblatt_2(model: &mut Array1<f64>, array_x: Vec<Vec<f64>>, array_y: Vec<f64>, nb_iter: i64, alpha: f64) {
+#[no_mangle]
+pub extern fn train_rosenblatt_2(model: &mut Array1<f64>, array_x: Vec<Vec<f64>>, array_y: Vec<f64>, nb_iter: i64, alpha: f64) {
     let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
     let array_x_matrix = Array::from_shape_vec((array_x.len(), array_x.first().unwrap().len()), array_x_transform);
     let array_y_matrix = Array::from_shape_vec((1, array_y.len()), array_y.clone());
@@ -157,7 +164,7 @@ pub fn train_rosenblatt_2(model: &mut Array1<f64>, array_x: Vec<Vec<f64>>, array
     @param Vec<Vec<f64>> vecteur de vecteur
     @return Vec<f64> conversion du vecteur double en simple
 */
-fn double_vec_in_one_vec(double_vec: Vec<Vec<f64>>) -> Vec<f64> {
+pub extern fn double_vec_in_one_vec(double_vec: Vec<Vec<f64>>) -> Vec<f64> {
     let mut array: Vec<f64> = Vec::new();
     for row in double_vec {
         for value in row {
@@ -173,7 +180,8 @@ fn double_vec_in_one_vec(double_vec: Vec<Vec<f64>>) -> Vec<f64> {
     @param Vec<f64> array_y
     @return Vec<f64>
 */
-fn train_regression(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) -> Vec<f64> {
+#[no_mangle]
+pub extern fn train_regression(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) -> Vec<f64> {
     let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
 
     let matrix_x = DMatrix::from_row_slice(array_x.len(), array_x.first().unwrap().len(), &array_x_transform);
