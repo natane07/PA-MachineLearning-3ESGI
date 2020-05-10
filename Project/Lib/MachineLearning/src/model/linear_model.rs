@@ -6,6 +6,7 @@ use ndarray_rand::RandomExt;
 use ndarray_rand::rand_distr::Uniform;
 use rand::Rng;
 use nalgebra::*;
+use std::slice::from_raw_parts;
 
 
 // #[no_mangle]  pour partager une fonction
@@ -17,23 +18,23 @@ pub extern fn test() {
     // Lineare Model classification
     let array_x3: Vec<Vec<f64>> = vec![vec![1., 1.], vec![2., 3.], vec![3., 3.]];
     let array_y3: Vec<f64> = vec![1., -1., -1.];
-    test_linear_model_classification_python(array_x3.clone(), array_y3.clone());
+    test_linear_model_classification(array_x3.clone(), array_y3.clone());
 
     // Lineare Model Régression
     let array_x2: Vec<Vec<f64>> = vec![vec![1.], vec![2.]];
     let array_y2: Vec<f64> = vec![2., 3.];
 
-    test_linear_model_regression_python(array_x2, array_y2);
+    test_linear_model_regression(array_x2, array_y2);
 
 }
 
 /**
-    Test lineare model regression in python
+    Test lineare model regression in rust
     @param array_x: Vec<Vec<f64>> Vector 2 dimension
     @param array_y: Vec<f64> Vector 1 dimension
 */
 #[no_mangle]
-pub extern fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+pub extern fn test_linear_model_regression(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
     println!("MODELE LINEAIRE REGRESSION");
 
     // Entrainement du model
@@ -47,12 +48,12 @@ pub extern fn test_linear_model_regression_python(array_x: Vec<Vec<f64>>, array_
 }
 
 /**
-    Test lineare model classification in python
+    Test lineare model classification in rust
     @param array_x: Vec<Vec<f64>> Vector 2 dimension
     @param array_y: Vec<f64> Vector 1 dimension
 */
 #[no_mangle]
-pub extern fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
+pub extern fn test_linear_model_classification(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) {
     println!("MODELE LINEAIRE CLASIFFICATION");
 
     // Initialisation des poids du modèle
@@ -69,6 +70,74 @@ pub extern fn test_linear_model_classification_python(array_x: Vec<Vec<f64>>, ar
     // Test sur le dataset
     for i in 0..(array_x_matrix.clone().unwrap().shape()[0]) {
         println!("{:?}", predict_linear_classification(&model_classification2, array_x_matrix.clone().unwrap().slice(s![i, ..])));
+    }
+}
+
+
+/**
+    Test lineare model regression in python
+    @param arr_x: &[f64] Table X
+    @param arr_x_size: usize Size of table X
+    @param arr_x_dim: usize Size of table in table X (dimension)
+    @param arr_y: &[f64] Table Y
+    @param arr_y_size: usize Size of table Y
+*/
+pub extern fn test_linear_model_regression_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) {
+    unsafe {
+        let slice_x = from_raw_parts(arr_x, arr_x_size);
+        let vec_x_from_slice = slice_x.to_vec();
+        let array_x = convert_slice_to_2d_vec(vec_x_from_slice.clone(), arr_x_dim);
+
+        let slice_y = from_raw_parts(arr_y, arr_y_size);
+        let array_y = slice_y.to_vec();
+
+        println!("MODELE LINEAIRE REGRESSION");
+
+        // Entrainement du model
+        let model_regression = train_regression(array_x.clone(), array_y);
+        // println!("model_regression: {:?}", model_regression.clone());
+
+        // Test du dataset
+        for i in 0..(array_x.len()) {
+            println!("{:?}", predict_linear_regression(model_regression.clone(), array_x[i].clone()));
+        }
+    }
+}
+
+/**
+    Test lineare model classification in python
+    @param arr_x: &[f64] Table X
+    @param arr_x_size: usize Size of table X
+    @param arr_x_dim: usize Size of table in table X (dimension)
+    @param arr_y: &[f64] Table Y
+    @param arr_y_size: usize Size of table Y
+*/
+pub extern fn test_linear_model_classification_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) {
+    unsafe {
+        let slice_x = from_raw_parts(arr_x, arr_x_size);
+        let vec_x_from_slice = slice_x.to_vec();
+        let array_x = convert_slice_to_2d_vec(vec_x_from_slice.clone(), arr_x_dim);
+
+        let slice_y = from_raw_parts(arr_y, arr_y_size);
+        let array_y = slice_y.to_vec();
+
+        println!("MODELE LINEAIRE CLASIFFICATION");
+
+        // Initialisation des poids du modèle
+        let mut model_classification2 = create_model(array_x.clone());
+
+        // Lancement de l'entrainement du modèle
+        train_rosenblatt_2(&mut model_classification2, array_x.clone(), array_y.clone(), 10000, 0.01);
+
+        // Transformation du tableau 2D en 1D
+        let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
+        // Transformation du tableau en matrice
+        let array_x_matrix = Array::from_shape_vec((array_x.len(), array_x.first().unwrap().len()), array_x_transform);
+
+        // Test sur le dataset
+        for i in 0..(array_x_matrix.clone().unwrap().shape()[0]) {
+            println!("{:?}", predict_linear_classification(&model_classification2, array_x_matrix.clone().unwrap().slice(s![i, ..])));
+        }
     }
 }
 
@@ -157,6 +226,24 @@ pub extern fn train_rosenblatt_2(model: &mut Array1<f64>, array_x: Vec<Vec<f64>>
         }
         model[0] += alpha * (array_y.get(k).unwrap() - gxk);
     }
+}
+
+/**
+    Convertir un slice en vector à 2 dimension
+    @param vec Vec<f64> le vecteur à convertir
+    @param arr_size_x usize taille de la sous dimension du tableau
+*/
+pub fn convert_slice_to_2d_vec(vec: Vec<f64>, arr_size_x: usize) -> Vec<Vec<f64>>{
+    let (left, mut right) = vec.split_at(arr_size_x);
+    let mut array: Vec<Vec<f64>> = Vec::new();
+    array.push(left.to_vec());
+    while right.len() != 0 {
+        let (left2, right_split) = right.split_at(arr_size_x);
+        array.push(left2.to_vec());
+        right = right_split;
+    }
+    println!("List to 2D vec {:?}", array);
+    return array;
 }
 
 /**
