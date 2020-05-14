@@ -1,0 +1,17 @@
+[package]
+name = "machine_learning"
+version = "0.1.0"
+authors = ["Natane <natane-b@hotmail.fr>"]
+edition = "2018"
+
+[lib]
+name = "machine_learning_c"
+#path = "src/lib.rs"
+crate-type = ["cdylib"] # pour une lib c ou crate pyo3 pour lib rust vers python
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.3"
+ndarray = "0.13.0"
+ndarray-rand = "0.11.0"
+nalgebra = "0.18"
