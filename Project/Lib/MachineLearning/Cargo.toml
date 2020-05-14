@@ -6,8 +6,8 @@ edition = "2018"
 
 [lib]
 name = "machine_learning_c"
-path = "src/lib.rs"
-#crate-type = ["cdylib"] # pour une lib c ou crate pyo3 pour lib rust vers python
+#path = "src/lib.rs"
+crate-type = ["cdylib"] # pour une lib c ou crate pyo3 pour lib rust vers python
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

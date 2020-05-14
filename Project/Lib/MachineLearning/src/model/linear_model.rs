@@ -82,7 +82,8 @@ pub extern fn test_linear_model_classification(array_x: Vec<Vec<f64>>, array_y: 
     @param arr_y: &[f64] Table Y
     @param arr_y_size: usize Size of table Y
 */
-pub extern fn test_linear_model_regression_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) {
+#[no_mangle]
+pub extern fn test_linear_model_regression_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) -> *const f64 {
     unsafe {
         let slice_x = from_raw_parts(arr_x, arr_x_size);
         let vec_x_from_slice = slice_x.to_vec();
@@ -98,9 +99,12 @@ pub extern fn test_linear_model_regression_python(arr_x: *mut f64, arr_x_size: u
         // println!("model_regression: {:?}", model_regression.clone());
 
         // Test du dataset
+        let mut result: Vec<f64> = Vec::new();
         for i in 0..(array_x.len()) {
-            println!("{:?}", predict_linear_regression(model_regression.clone(), array_x[i].clone()));
+            let value = predict_linear_regression(model_regression.clone(), array_x[i].clone());
+            result.push(value);
         }
+        return result.as_slice().as_ptr();
     }
 }
 
@@ -112,7 +116,8 @@ pub extern fn test_linear_model_regression_python(arr_x: *mut f64, arr_x_size: u
     @param arr_y: &[f64] Table Y
     @param arr_y_size: usize Size of table Y
 */
-pub extern fn test_linear_model_classification_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) {
+#[no_mangle]
+pub extern fn test_linear_model_classification_python(arr_x: *mut f64, arr_x_size: usize, arr_x_dim: usize, arr_y: *mut f64, arr_y_size: usize) -> *const f64 {
     unsafe {
         let slice_x = from_raw_parts(arr_x, arr_x_size);
         let vec_x_from_slice = slice_x.to_vec();
@@ -135,9 +140,12 @@ pub extern fn test_linear_model_classification_python(arr_x: *mut f64, arr_x_siz
         let array_x_matrix = Array::from_shape_vec((array_x.len(), array_x.first().unwrap().len()), array_x_transform);
 
         // Test sur le dataset
+        let mut result: Vec<f64> = Vec::new();
         for i in 0..(array_x_matrix.clone().unwrap().shape()[0]) {
-            println!("{:?}", predict_linear_classification(&model_classification2, array_x_matrix.clone().unwrap().slice(s![i, ..])));
+            let value =  predict_linear_classification(&model_classification2, array_x_matrix.clone().unwrap().slice(s![i, ..]));
+            result.push(value);
         }
+        return result.as_slice().as_ptr();
     }
 }
 
