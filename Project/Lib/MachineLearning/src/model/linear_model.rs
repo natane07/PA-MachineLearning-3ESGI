@@ -2,7 +2,7 @@ extern crate ndarray;
 extern crate rand;
 use std::slice::{from_raw_parts, from_raw_parts_mut};
 use rand::{Rng, thread_rng};
-// use nalgebra::*;
+use nalgebra::*;
 
 /**
     Création d'un modele lineaire
@@ -102,21 +102,38 @@ pub extern fn train_linear_model_classification_python(model_ptr: *mut f64,
         model[0] += semi_grad * 1.0;
     }
 }
-// /**
-//     Entrainement modéle linéaire simple de régression
-//     @param Vec<Vec<f64>> array_x
-//     @param Vec<f64> array_y
-//     @return Vec<f64>
-// */
-// // #[no_mangle]
-// // pub extern fn train_regression(array_x: Vec<Vec<f64>>, array_y: Vec<f64>) -> Vec<f64> {
-// //     // let array_x_transform: Vec<f64> = double_vec_in_one_vec(array_x.clone());
-// //     //
-// //     // let matrix_x = DMatrix::from_row_slice(array_x.len(), array_x.first().unwrap().len(), &array_x_transform);
-// //     //
-// //     // let matrix_y = DMatrix::from_row_slice(array_y.len(), 1, &array_y);
-// //     //
-// //     // let matrix_w = (((matrix_x.transpose() * matrix_x.clone()).try_inverse()).unwrap() * matrix_x.transpose()) * matrix_y.clone();
-// //     //
-// //     // return matrix_w.data.as_vec().to_vec();
-// // }
+/**
+    Entrainement modéle linéaire simple de régression
+*/
+#[no_mangle]
+pub extern fn train_linear_model_regression_python(model_ptr: *mut f64,
+                               dataset_inputs_ptr: *mut f64,
+                               dataset_expected_outputs_ptr: *mut f64,
+                               dataset_samples_count: usize,
+                               dataset_sample_features_count: usize) {
+    let model;
+    let dataset_inputs;
+    let dataset_expected_outputs;
+
+    // Création des slice
+    unsafe {
+        model = from_raw_parts_mut(model_ptr, dataset_sample_features_count + 1);
+        dataset_inputs = from_raw_parts(dataset_inputs_ptr, dataset_samples_count * dataset_sample_features_count);
+        dataset_expected_outputs = from_raw_parts(dataset_expected_outputs_ptr, dataset_samples_count);
+    }
+    // Transformation des slice en Vec
+    let dataset_inputs_vec = dataset_inputs.to_vec();
+    let dataset_expected_outputs_vec = dataset_expected_outputs.to_vec();
+
+    // Création des matrice
+    let matrix_x = DMatrix::from_vec(dataset_samples_count, dataset_sample_features_count, dataset_inputs_vec);
+    let matrix_y = DMatrix::from_vec(dataset_samples_count, 1, dataset_expected_outputs_vec);
+
+    // Calcul pseudo inverse
+    let matrix_w = (((matrix_x.transpose() * matrix_x.clone()).try_inverse()).unwrap() * matrix_x.transpose()) * matrix_y.clone();
+
+    let matrix_vec = matrix_w.data.as_vec().to_vec();
+    for i in 0..dataset_sample_features_count {
+        model[i] = matrix_vec[0];
+    }
+}
