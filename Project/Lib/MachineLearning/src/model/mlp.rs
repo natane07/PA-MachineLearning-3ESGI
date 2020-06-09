@@ -77,11 +77,11 @@ pub fn mlp_predict_common(mlp: MLP, inputs: &[f64], classification_mode: bool) -
 }
 
 pub extern fn mlp_regression(mlp: MLP, inputs: &[f64]) -> &[Vec<f64>] {
-    return mlp_predict_common(mlp, inputs, False);
+    return mlp_predict_common(mlp, inputs, false);
 }
 
 pub extern fn mlp_classification(mlp: MLP, inputs: &[f64]) -> &[Vec<f64>] {
-    return mlp_predict_common(mlp, inputs, True);
+    return mlp_predict_common(mlp, inputs, true);
 }
 
 /**
@@ -134,7 +134,7 @@ pub fn mlp_train_classification(mlp: MLP,
                                 expected_outputs: &[Vec<f64>],
                                 iterations: i64,
                                 alpha: f64) {
-    return mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha, True);
+    return mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha, true);
 }
 
 pub fn mlp_train_regression(mlp: MLP,
@@ -142,5 +142,5 @@ pub fn mlp_train_regression(mlp: MLP,
                             expected_outputs: &[Vec<f64>],
                             iterations: i64,
                             alpha: f64) {
-    return mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha, False);
+    return mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha, false);
 }
