@@ -137,34 +137,33 @@ pub extern fn mlp_train_common(mlp: &mut MLP,
                                iterations: usize,
                                alpha: f64,
                                classification_mode: bool) {
-
     let mut rand = rand::thread_rng();
     for iterator in 0..iterations {
-        let mut k: usize = rand.gen_range(0, inputs.len() - 1) as usize;
+        let mut k: usize = rand.gen_range(0, inputs.len()) as usize;
         _mlp_predict_common(mlp, inputs[k].clone(), classification_mode);
         for j in 1..(mlp.npl[mlp.l] + 1) as usize{
             mlp.deltas[mlp.l][j] = mlp.x[mlp.l][j] - expected_outputs[k][j - 1];
             if classification_mode {
-                mlp.deltas[mlp.l][j] *= (1 - (mlp.x[mlp.l][j] * mlp.x[mlp.l][j]) as i32) as f64;
+                mlp.deltas[mlp.l][j] *= (1f64 - (mlp.x[mlp.l][j] * mlp.x[mlp.l][j]));
             }
         }
-    }
-
-    for layer in (mlp.l + 1)..2 {
-        for i in 1..(mlp.npl[layer - 1] + 1) as usize {
-            let mut result: f64 = 0.0;
-            for j in 1..(mlp.npl[layer] + 1) as usize{
-                result += mlp.w[layer][i][j] * mlp.deltas[layer][j];
+        for layer in -(mlp.l as i64)..-1 {
+            let layer = -layer as usize;
+            for i in 1..(mlp.npl[layer - 1] + 1) as usize {
+                let mut result: f64 = 0.0;
+                for j in 1..(mlp.npl[layer] + 1) as usize{
+                    result += mlp.w[layer][i][j] * mlp.deltas[layer][j];
+                }
+                result *= (1f64 - (mlp.x[layer - 1][i] * mlp.x[layer - 1][i]));
+                mlp.deltas[layer - 1][i] = result;
             }
-            result *= (1 - (mlp.x[layer - 1][i] * mlp.x[layer - 1][i]) as i32) as f64;
-            mlp.deltas[layer - 1][i] = result;
         }
-    }
 
-    for layer in 1..(mlp.l + 1) {
-        for i in 0..(mlp.npl[layer - 1] + 1) as usize{
-            for j in 1..(mlp.npl[layer] + 1) as usize{
-                mlp.w[layer][i][j] -= alpha * mlp.x[layer - 1][i] * mlp.deltas[layer][j];
+        for layer in 1..(mlp.l + 1) {
+            for i in 0..(mlp.npl[layer - 1] + 1) as usize{
+                for j in 1..(mlp.npl[layer] + 1) as usize{
+                    mlp.w[layer][i][j] -= alpha * mlp.x[layer - 1][i] * mlp.deltas[layer][j];
+                }
             }
         }
     }
