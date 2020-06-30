@@ -2,6 +2,22 @@ extern crate rand;
 
 use rand::{Rng};
 use std::slice::from_raw_parts;
+use serde::{Deserialize, Serialize};
+use serde_json::{Result, Value};
+use std::fs::{File, read_to_string};
+use std::os::raw::c_char;
+use std::ffi::CStr;
+use std::str::from_utf8;
+use std::io::Read;
+
+#[derive(Serialize, Deserialize)]
+pub struct MLP_serialize {
+    npl: Vec<i64>,
+    l: usize,
+    w: Vec<Vec<Vec<f64>>>,
+    deltas: Vec<Vec<f64>>,
+    x: Vec<Vec<f64>>,
+}
 
 pub struct MLP {
     npl: Vec<i64>,
@@ -77,11 +93,30 @@ pub fn create_mlp(npl: *mut i64, npl_size: usize) -> *const MLP {
 }
 
 #[no_mangle]
-pub fn test(model_ptr: *const MLP) {
-    let mlp;
+pub fn serialized_mlp(model_ptr: *const MLP) {
+    let mlp_python;
     unsafe {
-        mlp = model_ptr.as_ref().unwrap();
+        mlp_python = model_ptr.as_ref().unwrap();
     }
+
+    let mlp = MLP_serialize {
+        npl: mlp_python.npl.clone(),
+        l: mlp_python.l,
+        w: mlp_python.w.clone(),
+        deltas: mlp_python.deltas.clone(),
+        x: mlp_python.x.clone(),
+    };
+
+    let j = serde_json::to_string(&mlp).unwrap();
+    let mut file = File::create("mlp.json").expect("Unable to create");
+    serde_json::to_writer(file, &j);
+}
+
+#[no_mangle]
+pub fn deserialized_mlp() -> *const MLP_serialize{
+    let contents = read_to_string("mlp.json").expect("Unable to open");
+    let deserialized: MLP_serialize = serde_json::from_str(&contents).unwrap();
+    Box::leak(Box::new(deserialized))
 }
 
 pub fn _mlp_predict_common(mlp: &mut MLP, sample_imput: Vec<f64>, classification_mode: bool) -> Vec<f64> {
