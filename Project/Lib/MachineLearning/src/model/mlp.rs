@@ -116,6 +116,7 @@ pub fn serialized_mlp(model_ptr: *const MLP) {
 pub fn deserialized_mlp() -> *const MLP_serialize{
     let contents = read_to_string("mlp.json").expect("Unable to open");
     let deserialized: MLP_serialize = serde_json::from_str(&contents).unwrap();
+    println!("MLP DATA: {:?}", deserialized.npl);
     Box::leak(Box::new(deserialized))
 }
 
@@ -164,6 +165,22 @@ pub extern fn mlp_classification(mlp: *mut MLP, sample_imput: *mut f64, sample_i
     let test = _mlp_classification(mlp, sample_imput.to_vec());
     println!("{:?}", test);
     return _mlp_classification(mlp, sample_imput.to_vec()).as_ptr();
+}
+
+#[no_mangle]
+pub extern fn mlp_classification_image(mlp: *mut MLP, sample_imput: *mut f64, sample_imput_size: usize) -> i64 {
+    let sample_imput = unsafe { from_raw_parts(sample_imput, sample_imput_size) };
+    let mlp = unsafe { mlp.as_mut().unwrap() };
+    let mut result = _mlp_classification(mlp, sample_imput.to_vec());
+    let mut max_index:i64 = 0;
+    let mut max_value :f64 = result[1];
+    for i in (1..result.len()){
+        if result[i] > max_value {
+            max_value = result[i];
+            max_index = i as i64 - 1;
+        }
+    }
+    return max_index;
 }
 
 pub extern fn mlp_train_common(mlp: &mut MLP,
