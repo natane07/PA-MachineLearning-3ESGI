@@ -183,6 +183,22 @@ pub extern fn mlp_classification_image(mlp: *mut MLP, sample_imput: *mut f64, sa
     return max_index;
 }
 
+#[no_mangle]
+pub extern fn mlp_classification_max_value(mlp: *mut MLP, sample_imput: *mut f64, sample_imput_size: usize) -> f64 {
+    let sample_imput = unsafe { from_raw_parts(sample_imput, sample_imput_size) };
+    let mlp = unsafe { mlp.as_mut().unwrap() };
+    let mut result = _mlp_classification(mlp, sample_imput.to_vec());
+    let mut max_index:i64 = 0;
+    let mut max_value :f64 = result[1];
+    for i in (1..result.len()){
+        if result[i] > max_value {
+            max_value = result[i];
+            max_index = i as i64 - 1;
+        }
+    }
+    return max_value;
+}
+
 pub extern fn mlp_train_common(mlp: &mut MLP,
                                inputs: Vec<Vec<f64>>,
                                expected_outputs: Vec<Vec<f64>>,
