@@ -84,7 +84,7 @@ pub extern fn train_linear_model_classification_python(model_ptr: *mut f64,
         dataset_expected_outputs = from_raw_parts(dataset_expected_outputs_ptr, dataset_samples_count);
     }
     let mut rng = thread_rng();
-
+    let mut total_error = 0;
     for _ in 0..iterations_count {
         let k = rng.gen_range(0, dataset_samples_count);
         let index_k = k * dataset_sample_features_count;
@@ -95,12 +95,14 @@ pub extern fn train_linear_model_classification_python(model_ptr: *mut f64,
         let predicted_output_k = predict_linear_classification_(&model, inputs_k, dataset_sample_features_count);
 
         let semi_grad = alpha * (output_k - predicted_output_k);
+        total_error += {if output_k == predicted_output_k { 0 } else { 1 }};
 
         for i in 0..dataset_sample_features_count {
             model[i + 1] += semi_grad * inputs_k[i];
         }
         model[0] += semi_grad * 1.0;
     }
+    dbg!(total_error);
 }
 /**
     Entrainement modéle linéaire simple de régression
@@ -122,12 +124,23 @@ pub extern fn train_linear_model_regression_python(model_ptr: *mut f64,
         dataset_expected_outputs = from_raw_parts(dataset_expected_outputs_ptr, dataset_samples_count);
     }
     // Transformation des slice en Vec
-    let dataset_inputs_vec = dataset_inputs.to_vec();
+    let mut dataset_inputs_vec = dataset_inputs.to_vec();
     let dataset_expected_outputs_vec = dataset_expected_outputs.to_vec();
+
+    println!("dataset_inputs: {:?}", dataset_inputs_vec);
+    println!("dataset_expected: {:?}", dataset_expected_outputs_vec);
+
+    for i in (0..dataset_inputs_vec.len()) {
+        println!("i: {:?}", dataset_inputs_vec[i]);
+        // dataset_inputs_vec.push(1.0)
+    }
 
     // Création des matrice
     let matrix_x = DMatrix::from_vec(dataset_samples_count, dataset_sample_features_count, dataset_inputs_vec);
     let matrix_y = DMatrix::from_vec(dataset_samples_count, 1, dataset_expected_outputs_vec);
+
+    println!("matrix_x: {:?}", matrix_x);
+    println!("matrix_y: {:?}", matrix_y);
 
     // Calcul pseudo inverse
     let matrix_w = (((matrix_x.transpose() * matrix_x.clone()).try_inverse()).unwrap() * matrix_x.transpose()) * matrix_y.clone();

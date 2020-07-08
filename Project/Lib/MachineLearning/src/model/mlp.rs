@@ -154,6 +154,22 @@ pub extern fn mlp_regression(mlp: *mut MLP, sample_imput: *mut f64, sample_imput
     return _mlp_regression(mlp, sample_imput.to_vec()).as_ptr();
 }
 
+#[no_mangle]
+pub extern fn mlp_regression_max_value(mlp: *mut MLP, sample_imput: *mut f64, sample_imput_size: usize) -> f64 {
+    let sample_imput = unsafe { from_raw_parts(sample_imput, sample_imput_size) };
+    let mlp = unsafe { mlp.as_mut().unwrap() };
+    let mut result = _mlp_regression(mlp, sample_imput.to_vec());
+    let mut max_index:i64 = 0;
+    let mut max_value :f64 = result[1];
+    for i in (1..result.len()){
+        if result[i] > max_value {
+            max_value = result[i];
+            max_index = i as i64 - 1;
+        }
+    }
+    return max_value;
+}
+
 pub extern fn _mlp_classification(mlp: &mut MLP, sample_imput: Vec<f64>) -> Vec<f64> {
     return _mlp_predict_common(mlp, sample_imput, true);
 }
@@ -245,21 +261,6 @@ pub extern fn _mlp_train_classification(mlp: &mut MLP,
     mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha,true);
 }
 
-
-/*
-pub extern fn _mlp_train_regression(mlp: &mut MLP,
-                                        inputs: Vec<f64>,
-                                        expected_outputs: Vec<f64>,
-                                        iterations: usize,
-                                        alpha: f64) {
-    mlp_train_common(mlp: &mut MLP,
-                     inputs: Vec<f64>,
-                     expected_outputs: Vec<f64>,
-                     iterations: usize,
-                     alpha: f64,
-                     false);
-}
-*/
 #[no_mangle]
 pub extern fn mlp_train_classification(mlp: *mut MLP,
                                        nb_row: usize,
@@ -290,7 +291,46 @@ pub extern fn mlp_train_classification(mlp: *mut MLP,
     println!("mlp.w:{:?}", mlp.w);
     println!("mlp.x:{:?}", mlp.x);
     println!("mlp_train_classification FIN");
+}
 
+pub extern fn _mlp_train_regression(mlp: &mut MLP,
+                                    inputs: Vec<Vec<f64>>,
+                                    expected_outputs: Vec<Vec<f64>>,
+                                    iterations: usize,
+                                    alpha: f64) {
+    mlp_train_common(mlp, inputs, expected_outputs, iterations, alpha,false);
+}
+
+#[no_mangle]
+pub extern fn mlp_train_regression(mlp: *mut MLP,
+                                       nb_row: usize,
+                                       inputs: *mut f64,
+                                       imput_size: usize,
+                                       expected_outputs: *mut f64,
+                                       expected_outputs_size: usize,
+                                       iterations: usize,
+                                       alpha: f64) {
+
+    let inputs = unsafe { from_raw_parts(inputs, imput_size) };
+    let outputs = unsafe { from_raw_parts(expected_outputs,expected_outputs_size ) };
+
+    let inputs = convert_slice_to_2d_vec(inputs.to_vec(), (imput_size / nb_row) as usize);
+    let outputs = convert_slice_to_2d_vec(outputs.to_vec(), (expected_outputs_size / nb_row) as usize);
+
+    let mlp = unsafe { mlp.as_mut().unwrap() };
+    println!("mlp_train_regression DEBUT");
+    println!("mlp.npl:{:?}", mlp.npl);
+    println!("mlp.deltas:{:?}", mlp.deltas);
+    println!("mlp.l:{:?}", mlp.l);
+    println!("mlp.w:{:?}", mlp.w);
+    println!("mlp.x:{:?}", mlp.x);
+    _mlp_train_regression(mlp, inputs, outputs, iterations, alpha);
+    println!("mlp.npl:{:?}", mlp.npl);
+    println!("mlp.deltas:{:?}", mlp.deltas);
+    println!("mlp.l:{:?}", mlp.l);
+    println!("mlp.w:{:?}", mlp.w);
+    println!("mlp.x:{:?}", mlp.x);
+    println!("mlp_train_regression FIN");
 }
 
 pub fn convert_slice_to_2d_vec(vec: Vec<f64>, arr_size_x: usize) -> Vec<Vec<f64>>{
