@@ -3,6 +3,42 @@ extern crate rand;
 use std::slice::{from_raw_parts, from_raw_parts_mut};
 use rand::{Rng, thread_rng};
 use nalgebra::*;
+use std::fs::{File, read_to_string};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct Lineare_modele_serialize {
+    model: Vec<f64>
+}
+
+#[no_mangle]
+pub fn serialized_lineare_modele(model: *mut f64, inputs_size: usize) {
+    let slice_model;
+    unsafe {
+        slice_model = from_raw_parts(model, inputs_size + 1);
+    }
+    dbg!(slice_model);
+
+    let model_lineaire = Lineare_modele_serialize {
+        model: slice_model.to_vec()
+    };
+
+    let j = serde_json::to_string(&model_lineaire).unwrap();
+    let mut file = File::create("lineare_model.json").expect("Unable to create");
+    serde_json::to_writer(file, &j);
+}
+
+#[no_mangle]
+pub fn deserialized_lineare_model() -> *const f64{
+    let contents = read_to_string("lineare_model.json").expect("Unable to open");
+    let deserialized: Lineare_modele_serialize = serde_json::from_str(&contents).unwrap();
+    println!("lineare_model DATA: {:?}", deserialized.model);
+
+    let mut slice = deserialized.model.into_boxed_slice(); // To Remove Excess Capacity
+    let ptr = slice.as_mut_ptr();
+    Box::leak(slice); // To prevent memory from being reclaimed
+    ptr
+}
 
 /**
     Création d'un modele lineaire
