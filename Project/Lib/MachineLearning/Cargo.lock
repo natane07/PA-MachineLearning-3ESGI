@@ -39,6 +39,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
+name = "cc"
+version = "1.0.57"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fde55d2a2bfaa4c9668bbc63f531fbdeee3ffe188f4662511ce2c22b3eedebe"
+
+[[package]]
 name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -51,6 +57,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "cmake"
+version = "0.1.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e56268c17a6248366d66d4a47a3381369d068cce8409bb1716ed77ea32163bb"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -104,6 +119,7 @@ dependencies = [
  "nalgebra",
  "ndarray",
  "ndarray-rand",
+ "osqp",
  "rand 0.3.23",
  "serde",
  "serde_json",
@@ -198,6 +214,25 @@ checksum = "c62be47e61d1842b9170f0fdeec8eba98e60e90e5446449a0545e5152acd7096"
 dependencies = [
  "autocfg 1.0.0",
  "libm",
+]
+
+[[package]]
+name = "osqp"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e51cb24b56736f082221c07ce8f615e704e93ca0291da4d865209d021af6946b"
+dependencies = [
+ "osqp-sys",
+]
+
+[[package]]
+name = "osqp-sys"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b8c3ac43187b09eecb642e7d64bfd939f124cd5dc08b34c85cb19f2b0c455fb"
+dependencies = [
+ "cc",
+ "cmake",
 ]
 
 [[package]]
