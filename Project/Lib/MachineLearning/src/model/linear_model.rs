@@ -139,11 +139,13 @@ pub extern fn train_linear_model_regression_python(model_ptr: *mut f64,
     let matrix_x = DMatrix::from_vec(dataset_samples_count, dataset_sample_features_count, dataset_inputs_vec);
     let matrix_y = DMatrix::from_vec(dataset_samples_count, 1, dataset_expected_outputs_vec);
 
+    let matrix_x_biais = matrix_x.clone().insert_column(0, 1.0);
     println!("matrix_x: {:?}", matrix_x);
     println!("matrix_y: {:?}", matrix_y);
+    println!("matrix_x_biais: {:?}", matrix_x_biais);
 
     // Calcul pseudo inverse
-    let matrix_w = (((matrix_x.transpose() * matrix_x.clone()).try_inverse()).unwrap() * matrix_x.transpose()) * matrix_y.clone();
+    let matrix_w = (((matrix_x_biais.transpose() * matrix_x_biais.clone()).try_inverse()).unwrap() * matrix_x_biais.transpose()) * matrix_y.clone();
 
     let matrix_vec = matrix_w.data.as_vec().to_vec();
     for i in 0..dataset_sample_features_count {
