@@ -184,7 +184,7 @@ pub extern fn train_linear_model_regression_python(model_ptr: *mut f64,
     let matrix_w = (((matrix_x_biais.transpose() * matrix_x_biais.clone()).try_inverse()).unwrap() * matrix_x_biais.transpose()) * matrix_y.clone();
 
     let matrix_vec = matrix_w.data.as_vec().to_vec();
-    for i in 0..dataset_sample_features_count {
-        model[i] = matrix_vec[0];
+    for i in 0..dataset_sample_features_count + 1 {
+        model[i] = matrix_vec[i];
     }
 }
