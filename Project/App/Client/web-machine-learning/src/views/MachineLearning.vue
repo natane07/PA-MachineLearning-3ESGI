@@ -17,35 +17,50 @@
         </v-col>
         <v-col cols="6">
           <v-text-field
-            label="Framework Machine Learning (MLP)"
+            label="Lib Machine Learning (MLP)"
             :value="mlpValue"
             v-model="mlpValue"
             outlined
             readonly
-          >sdcsdv</v-text-field>
+          ></v-text-field>
         </v-col>
         <v-col cols="6">
           <v-btn @click="sendJsonFile" block rounded color="primary">Charger le modéle MLP</v-btn>
         </v-col>
         <v-col cols="6">
-          <v-btn @click="sendImage" block rounded color="primary">Lancer la prédiction MLP</v-btn>
+          <v-btn @click="sendImageMLP" block rounded color="primary">Lancer la prédiction MLP</v-btn>
         </v-col>
         <v-col cols="6">
-          <v-file-input label="Modéle pré-entrainé Tensorflow" accept=".json" outlined dense></v-file-input>
+          <v-file-input @change="downloadJsonFileModelLineaire" label="Modéle pré-entrainé modele lineaire" accept=".json" outlined dense></v-file-input>
         </v-col>
         <v-col cols="6">
           <v-text-field
-            label="Framework Tensorflow"
-            value=""
+            label="Lib Machine Learning (modele lineaire)"
+            :value="lineareModelValue"
+            v-model="lineareModelValue"
             outlined
             readonly
-          >toto</v-text-field>
+          ></v-text-field>
         </v-col>
         <v-col cols="6">
-          <v-btn block rounded color="primary">Charger le modéle Tensorflow</v-btn>
+          <v-combobox
+            v-model="selectFirstClass"
+            :items="items"
+            label="Séléctionner la premiere classe"
+          ></v-combobox>
         </v-col>
         <v-col cols="6">
-          <v-btn block rounded color="primary">Lancer la prédiction Tensorflow</v-btn>
+          <v-combobox
+            v-model="selectSecondClass"
+            :items="items"
+            label="Séléctionner la seconde classe"
+          ></v-combobox>
+        </v-col>
+        <v-col cols="6">
+          <v-btn @click="sendJsonFileModeleLineaire" block rounded color="primary">Charger le modéle lineaire</v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn @click="sendImageLineareModel" block rounded color="primary">Lancer la prédiction modele lineaire</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -63,7 +78,17 @@ export default {
       file: null,
       jsonFile: '',
       mlpValue: '',
-      event: null
+      event: null,
+      lineareModelValue: '',
+      jsonFileLineareModel: '',
+      eventLineareModel: null,
+      items: [
+        'Bas',
+        'Chaussure',
+        'Haut'
+      ],
+      selectFirstClass: 'Bas',
+      selectSecondClass: 'Chaussure'
     }
   },
   methods: {
@@ -75,6 +100,15 @@ export default {
         this.jsonFile = evt.target.result
       }
       console.log(this.jsonFile)
+    },
+    downloadJsonFileModelLineaire (event) {
+      console.log(event)
+      const reader = new FileReader()
+      reader.readAsText(event, 'UTF-8')
+      reader.onload = evt => {
+        this.jsonFileLineareModel = evt.target.result
+      }
+      console.log(this.jsonFileLineareModel)
     },
     downloadFile (event) {
       console.log(event)
@@ -95,7 +129,7 @@ export default {
       reader.readAsDataURL(file)
       console.log(this.file)
     },
-    sendImage () {
+    sendImageMLP () {
       this.mlpValue = ''
       if (this.event || this.jsonFile !== '') {
         console.log(this.event)
@@ -118,6 +152,37 @@ export default {
         console.log('Image or Json file not found')
       }
     },
+    sendImageLineareModel () {
+      this.lineareModelValue = ''
+      if (this.selectFirstClass === this.selectSecondClass) {
+        console.log('ERREUR CLASSE SIMILAIRE')
+        return
+      }
+      if (this.event || this.jsonFileLineareModel !== '') {
+        console.log(this.event)
+        const formData = new FormData()
+        formData.append('image', this.event)
+        axios.post('http://127.0.0.1:8000/ml/lineare_model', formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then((result) => {
+          console.log('test' + this.lineareModelValue)
+          console.log(result.data.message)
+          if (result.data.message === 1) {
+            this.lineareModelValue = this.selectFirstClass
+          } else {
+            this.lineareModelValue = this.selectSecondClass
+          }
+        })
+          .catch(function () {
+            console.log('FAILURE!!')
+          })
+      } else {
+        console.log('Image or Json file not found')
+      }
+    },
     sendJsonFile () {
       if (this.jsonFile) {
         console.log(this.jsonFile)
@@ -128,6 +193,24 @@ export default {
             }
           }).then((result) => {
           console.log(this.mlpValue)
+          console.log(result.data)
+        })
+          .catch(function () {
+            console.log('FAILURE!!')
+          })
+      } else {
+        console.log('file null')
+      }
+    },
+    sendJsonFileModeleLineaire () {
+      if (this.jsonFileLineareModel) {
+        console.log(this.jsonFileLineareModel)
+        axios.post('http://127.0.0.1:8000/ml/json_load_modele_lineaire', this.jsonFileLineareModel,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then((result) => {
           console.log(result.data)
         })
           .catch(function () {
