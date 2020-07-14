@@ -67,7 +67,7 @@ def predict_image_classification():
 
 if __name__ == "__main__":
 
-    predict_image_classification()
+    # predict_image_classification()
 
     # Deserialisation du mlp.json
     # mlp = my_lib.deserialized_mlp()
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     # Entrainement du model MLP
     my_lib.mlp_train_classification(mlp, len(image_arr), x_train_pointer, len(x_flatten), y_train_pointer,
-                                    len(y_flatten), 100000, 0.001)
+                                    len(y_flatten), 100, 0.001)
 
     # le nombre d'image correctement predit
     good_reponse = 0

@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'predict_image', views.predict_image),
     url(r'lineare_model', views.lineare_model),
     url(r'json_load_modele_lineaire', views.json_load_modele_lineaire),
+    url(r'tf_predict', views.tf_predict),
+
 ]

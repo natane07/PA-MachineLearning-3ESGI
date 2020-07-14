@@ -86,3 +86,19 @@ def lineare_model(request):
         response_data['message'] = result
     return JsonResponse(response_data)
 
+@csrf_exempt
+def tf_predict(request):
+    if request.method == 'POST':
+        path = request.FILES["image"]
+        new_img = []
+        print(path)
+        im = Image.open(path)
+        im_arr1 = np.array(im) / 255
+        print(len(im_arr1.shape))
+        if im.width is 30 and len(im_arr1.shape) is 3:
+            new_img.append(np.reshape(im_arr1, (30 * 30 * 3)))
+        result = lib_ml.predict_image_tenserflow(new_img)
+        response_data = {}
+        response_data['success'] = True
+        response_data['message'] = result
+    return JsonResponse(response_data)

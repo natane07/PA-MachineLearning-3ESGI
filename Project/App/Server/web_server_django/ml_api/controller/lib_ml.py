@@ -3,6 +3,7 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 from ctypes import *
+from tensorflow_core.python import keras
 
 my_dll_path = "C:/Users/MOI/dev/PA-MachineLearning-3ESGI/Project/Lib/MachineLearning/target/debug/machine_learning_c.dll"
 my_lib = CDLL(my_dll_path)
@@ -84,3 +85,30 @@ def predict_image_classification_linear_model(new_img):
 
     predict_value = my_lib.predict_linear_classification(model_deser, image_numpy[0].ctypes.data_as(POINTER(c_double)), len(image_numpy[0]))
     return predict_value
+
+def predict_image_tenserflow(new_img):
+    # load json and create model
+    json_file = open('model_tenserflow.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = keras.models.model_from_json(loaded_model_json)
+
+    # load weights into new model
+    model.load_weights("model.h5")
+    print("Loaded model from disk")
+
+    image_numpy = np.array(new_img)
+    print("RESULT LINEARE MODEL")
+    result = model.predict(image_numpy)
+    print(result)
+    best_result = np.argmax(result)
+    print(result[0][best_result])
+    percentage = "{:.2%}".format(result[0][best_result])
+    print(percentage)
+    if (best_result == 0):
+        classe_result = 'Bas avec une prediction a ' + percentage
+    elif best_result == 1:
+        classe_result = 'Chaussure avec une prediction a ' + percentage
+    else:
+        classe_result = 'Haut avec une prediction a ' + percentage
+    return classe_result

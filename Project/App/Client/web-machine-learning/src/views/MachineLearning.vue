@@ -57,10 +57,22 @@
           ></v-combobox>
         </v-col>
         <v-col cols="6">
-          <v-btn @click="sendJsonFileModeleLineaire" block rounded color="primary">Charger le modéle lineaire</v-btn>
+          <v-btn @click="sendJsonFileModeleLineaire" block rounded color="warning">Charger le modéle lineaire</v-btn>
         </v-col>
         <v-col cols="6">
-          <v-btn @click="sendImageLineareModel" block rounded color="primary">Lancer la prédiction modele lineaire</v-btn>
+          <v-btn @click="sendImageLineareModel" block rounded color="warning">Lancer la prédiction modele lineaire</v-btn>
+        </v-col>
+        <v-col cols="12">
+          <v-text-field
+            label="Tenserflow / Keras"
+            :value="tenserflowValue"
+            v-model="tenserflowValue"
+            outlined
+            readonly
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12">
+          <v-btn @click="sendImageTenserflow" block rounded color="success">Lancer la prédiction Tenserflow</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -78,6 +90,7 @@ export default {
       file: null,
       jsonFile: '',
       mlpValue: '',
+      tenserflowValue: '',
       event: null,
       lineareModelValue: '',
       jsonFileLineareModel: '',
@@ -144,6 +157,29 @@ export default {
           console.log(this.mlpValue)
           console.log(result.data)
           this.mlpValue = result.data.message
+        })
+          .catch(function () {
+            console.log('FAILURE!!')
+          })
+      } else {
+        console.log('Image or Json file not found')
+      }
+    },
+    sendImageTenserflow () {
+      this.tenserflowValue = ''
+      if (this.event) {
+        console.log(this.event)
+        const formData = new FormData()
+        formData.append('image', this.event)
+        axios.post('http://127.0.0.1:8000/ml/tf_predict', formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then((result) => {
+          console.log(this.tenserflowValue)
+          console.log(result.data)
+          this.tenserflowValue = result.data.message
         })
           .catch(function () {
             console.log('FAILURE!!')
