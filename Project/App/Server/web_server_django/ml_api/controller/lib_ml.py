@@ -4,8 +4,12 @@ from os import listdir
 from os.path import isfile, join
 from ctypes import *
 from tensorflow_core.python import keras
+import os as os
 
-my_dll_path = "C:/Users/MOI/dev/PA-MachineLearning-3ESGI/Project/Lib/MachineLearning/target/debug/machine_learning_c.dll"
+print(os.getcwd() + "/../../../Lib/debug/machine_learning_c.dll")
+my_dll_path = os.getcwd() + "/../../../Lib/debug/machine_learning_c.dll"
+
+# my_dll_path = "C:/Users/MOI/dev/PA-MachineLearning-3ESGI/Project/Lib/MachineLearning/target/debug/machine_learning_c.dll"
 my_lib = CDLL(my_dll_path)
 # Création d'un model
 my_lib.create_linear_model.restype = c_void_p
