@@ -175,6 +175,7 @@ pub extern fn train_linear_model_regression_python(model_ptr: *mut f64,
     let matrix_x = DMatrix::from_vec(dataset_samples_count, dataset_sample_features_count, dataset_inputs_vec);
     let matrix_y = DMatrix::from_vec(dataset_samples_count, 1, dataset_expected_outputs_vec);
 
+    // Ajout du biais
     let matrix_x_biais = matrix_x.clone().insert_column(0, 1.0);
     println!("matrix_x: {:?}", matrix_x);
     println!("matrix_y: {:?}", matrix_y);
